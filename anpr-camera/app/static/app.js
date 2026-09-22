@@ -82,6 +82,11 @@ async function refresh() {
   renderHistory(detections.items || []);
 }
 
+document.getElementById("photo").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  document.getElementById("file-label").textContent = file ? file.name : "Выбрать фото";
+});
+
 document.getElementById("upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const file = document.getElementById("photo").files[0];

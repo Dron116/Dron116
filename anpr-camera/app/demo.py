@@ -34,12 +34,12 @@ def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
 
 def draw_russian_plate(plate: str, width: int = 520, height: int = 112) -> np.ndarray:
     """Рисует макет российского номерного знака для демо-сцены и тестов."""
-    img = Image.new("RGB", (width, height), (245, 245, 245))
+    img = Image.new("RGB", (width, height), (248, 248, 246))
     draw = ImageDraw.Draw(img)
-    draw.rounded_rectangle((2, 2, width - 3, height - 3), radius=10, outline=(20, 20, 20), width=4)
-    region_x = int(width * 0.74)
-    draw.rectangle((region_x, 6, width - 8, height - 7), fill=(236, 240, 248))
-    draw.line((region_x, 6, region_x, height - 7), fill=(30, 30, 30), width=3)
+    draw.rounded_rectangle((2, 2, width - 3, height - 3), radius=10, outline=(18, 18, 18), width=5)
+    region_x = int(width * 0.72)
+    draw.rectangle((region_x, 8, width - 10, height - 9), fill=(232, 238, 248))
+    draw.line((region_x, 8, region_x, height - 9), fill=(20, 20, 20), width=4)
 
     compact = plate.replace(" ", "")
     letter = compact[0]
@@ -47,15 +47,15 @@ def draw_russian_plate(plate: str, width: int = 520, height: int = 112) -> np.nd
     tail = compact[4:6]
     region = compact[6:]
 
-    font_big = _font(int(height * 0.72))
-    font_mid = _font(int(height * 0.52))
-    font_sm = _font(int(height * 0.22))
+    font_main = _font(int(height * 0.62))
+    font_reg = _font(int(height * 0.55))
+    font_sm = _font(int(height * 0.18))
 
-    draw.text((18, height * 0.18), letter, font=font_mid, fill=(15, 15, 15))
-    draw.text((int(width * 0.14), height * 0.05), digits, font=font_big, fill=(15, 15, 15))
-    draw.text((int(width * 0.48), height * 0.18), tail, font=font_mid, fill=(15, 15, 15))
-    draw.text((region_x + 14, height * 0.12), region, font=font_mid, fill=(15, 15, 15))
-    draw.text((region_x + 22, height * 0.68), "RUS", font=font_sm, fill=(30, 60, 140))
+    draw.text((16, height * 0.16), letter, font=font_main, fill=(12, 12, 12))
+    draw.text((int(width * 0.13), height * 0.12), digits, font=font_main, fill=(12, 12, 12))
+    draw.text((int(width * 0.46), height * 0.16), tail, font=font_main, fill=(12, 12, 12))
+    draw.text((region_x + 10, height * 0.08), region, font=font_reg, fill=(12, 12, 12))
+    draw.text((region_x + 18, height * 0.68), "RUS", font=font_sm, fill=(30, 60, 140))
     return cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
 
 
@@ -78,37 +78,31 @@ def render_demo_frame(t: float, plates: Iterable[str] = DEMO_PLATES) -> np.ndarr
         cv2.rectangle(frame, (x + shift, 562), (x + shift + 70, 576), (230, 230, 210), -1)
 
     plates_list = list(plates)
-    idx = int(t // 4) % len(plates_list)
+    idx = int(t // 6) % len(plates_list)
     plate = plates_list[idx]
-    local = t % 4
-    x = int(-200 + (w + 400) * (local / 4))
-    y = 430
-    car_w, car_h = 420, 150
+    progress = (t % 6) / 6.0
+    car_w, car_h = 520, 190
+    x = int(30 + (w - car_w - 60) * progress)
+    y = 410
     cv2.rectangle(frame, (x, y), (x + car_w, y + car_h), (36, 48, 92), -1)
-    cv2.rectangle(frame, (x + 40, y + 20), (x + 190, y + 80), (90, 160, 200), -1)
-    cv2.rectangle(frame, (x + 210, y + 20), (x + 340, y + 80), (90, 160, 200), -1)
-    cv2.circle(frame, (x + 70, y + car_h), 28, (20, 20, 20), -1)
-    cv2.circle(frame, (x + car_w - 70, y + car_h), 28, (20, 20, 20), -1)
+    cv2.rectangle(frame, (x + 40, y + 18), (x + 200, y + 78), (90, 160, 200), -1)
+    cv2.rectangle(frame, (x + 230, y + 18), (x + 390, y + 78), (90, 160, 200), -1)
+    cv2.circle(frame, (x + 80, y + car_h), 30, (20, 20, 20), -1)
+    cv2.circle(frame, (x + car_w - 80, y + car_h), 30, (20, 20, 20), -1)
 
-    plate_img = draw_russian_plate(plate, width=260, height=64)
+    plate_img = draw_russian_plate(plate, width=420, height=100)
     ph, pw = plate_img.shape[:2]
-    px, py = x + 80, y + 95
-    if 0 <= px < w and 0 <= py < h:
-        x2 = min(w, px + pw)
-        y2 = min(h, py + ph)
-        crop = plate_img[: y2 - py, : x2 - px]
-        if crop.size:
-            frame[py:y2, px:x2] = crop
+    px = x + (car_w - pw) // 2
+    py = y + 78
+    frame[py : py + ph, px : px + pw] = plate_img
 
-    overlay = f"DEMO  {plate}  камера недоступна из этой сети"
-    cv2.putText(
-        frame,
-        overlay,
-        (36, 48),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.8,
-        (140, 255, 210),
-        2,
-        cv2.LINE_AA,
-    )
+    overlay = "DEMO  камера недоступна в этой сети"
+    frame = _put_text(frame, overlay, (32, 24), 28, (140, 255, 210))
     return frame
+
+
+def _put_text(frame: np.ndarray, text: str, xy: tuple[int, int], size: int, color: tuple[int, int, int]) -> np.ndarray:
+    img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(img)
+    draw.text(xy, text, font=_font(size), fill=(color[2], color[1], color[0]))
+    return cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)

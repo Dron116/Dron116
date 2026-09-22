@@ -143,12 +143,26 @@ body {
   padding: 14px 16px 16px;
 }
 
-.upload label {
-  color: var(--muted);
+.upload label.file {
+  position: relative;
+  color: var(--text);
   font-size: 13px;
-  display: flex;
+  font-weight: 600;
+  display: inline-flex;
   gap: 10px;
   align-items: center;
+  background: #0a151c;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.upload label.file input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 button,

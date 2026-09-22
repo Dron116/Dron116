@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ANPR — распознавание номеров</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/static/styles.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,11 +38,11 @@
           </div>
         </div>
         <form id="upload-form" class="upload">
-          <label>
-            Распознать фото
+          <label class="file">
+            <span id="file-label">Выбрать фото</span>
             <input type="file" id="photo" accept="image/*" />
           </label>
-          <button type="submit">Загрузить кадр</button>
+          <button type="submit">Распознать кадр</button>
         </form>
       </section>
 

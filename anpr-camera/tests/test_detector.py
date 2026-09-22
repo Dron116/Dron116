@@ -16,9 +16,7 @@ def test_demo_frame_contains_moving_plate():
     assert frame.shape[0] == 720
     assert frame.shape[1] == 1280
     detections = recognize(frame)
-    # в середине анимации номер крупный; если OCR сработал — проверяем формат
-    for det in detections:
-        assert len(det.plate) in (8, 9)
+    assert "А123ВС777" in {d.plate for d in detections}
 
 
 def test_empty_frame():
